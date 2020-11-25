@@ -33,8 +33,11 @@ def calc_y(x):
     d = x[3]
     e=x[4]
     f=x[5]
+    g=x[6]
+    h=x[7]
+    i=x[8]
     #y = a * xm1 + b  # linear regression
-    y = (a*xm1**2+b*xm1)+(b*xm2**2+c*xm2)+(d*xm3**2+e*xm3)+f
+    y = (+a*xm1**2+b*xm1)+(b*xm2**2+c*xm2)+(f*(xm3**e)+d*xm3**2+e*xm3)+f
     return y
 
 # define objective
@@ -49,20 +52,23 @@ def objective(x):
     return obj
 
 # initial guesses
-x0 = np.zeros(6)
+x0 = np.zeros(9)
 x0[0] = 0.0 # a
 x0[1] = 0.0 # b
 x0[2] = 0.0 # c
 x0[3] = 0.0 # d
 x0[4]=0.0
 x0[5]=0.0
+x0[6]=0.0
+x0[7]=0.0
+x0[8]=0.0
 # show initial objective
 print('Initial Objective: ' + str(objective(x0)))
 
 # optimize
 # bounds on variables
-my_bnds = (-100.0, 100.0)
-bnds = (my_bnds, my_bnds, my_bnds, my_bnds,my_bnds,my_bnds)
+my_bnds = (-100.0,100.0)
+bnds = (my_bnds, my_bnds, my_bnds, my_bnds,my_bnds,my_bnds,my_bnds,my_bnds,my_bnds)
 solution = minimize(objective, x0, method='SLSQP', bounds=bnds)
 x = solution.x
 y = calc_y(x)
@@ -86,7 +92,12 @@ cE = 'e = ' + str(x[4])
 print(cE)
 cF = 'f = ' + str(x[5])
 print(cF)
-
+cF = 'g = ' + str(x[6])
+print(cF)
+cF = 'h = ' + str(x[7])
+print(cF)
+cF = 'i = ' + str(x[8])
+print(cF)
 cFormula = "Formula is : " + "\n" \
            + "A * WTI^B * HH^C * PROPANE^D"
 cLegend = cFormula + "\n" + cA + "\n" + cB + "\n" \
