@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 from skimage import io
 import math  
 def process_frame(frame):
-    img=frame[140:,:]
+    img=frame[140:,600:]
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
 #io.imshow(img[:, :, ::-1])
@@ -17,7 +17,9 @@ def process_frame(frame):
     lower_range = np.array([20,10,190])
     upper_range = np.array([37,190,255])
     img = cv2.inRange(img, lower_range, upper_range)
-    img = cv2.GaussianBlur(img,(5,5),cv2.BORDER_DEFAULT)
+    
+    if cv2.countNonZero(img) < 100:
+      return 12
 #img[abs(35-img[:,:,0])>=4]=0
 #img[img[:,:,0]!=0]=1
 #img[abs(img[:,:,0]-36)<5]=1
@@ -25,7 +27,9 @@ def process_frame(frame):
 #io.imshow(img)
 #plt.show()
 #gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    img = cv2.GaussianBlur(img,(5,5),cv2.BORDER_DEFAULT)
     img = cv2.Canny(img, 60, 60*4)
+   
 #io.imshow(edges)
 #plt.show()
 #lines = cv2.HoughLinesP(edges, 1, np.pi/180, 30, maxLineGap=250)
@@ -37,9 +41,9 @@ def process_frame(frame):
     premean=0
     maxdiffmean=0
     indexmvar=0
-    for index in range(20):
+    for index in range(10):
     #fragimg.append(img[index*50:index*50+50,:])
-        edges=img[index*25:index*25+25,:]
+        edges=img[index*50:index*50+50,:]  # sua o day
     #io.imshow(edges)
     #plt.show()
     #lines = cv2.HoughLinesP(edges, 1, np.pi/180, 30, maxLineGap=250)
@@ -79,9 +83,9 @@ def process_frame(frame):
              #angle2=angle
             #angle= math.degrees(math.atan((y1-y2)/(x1-x2)))
             
-            if (x2>500) and (x2>500) and (25*index+y2>ymax):
+            if (x2>350) and (x2>350) and (50*index+y2>ymax):     # thi fai sua o day
                #print('got ymnax')
-               ymax=25*index+y2
+               ymax=50*index+y2
                xmax=x2
         if (anglemat):     
          if (premean!=0):  
@@ -100,60 +104,28 @@ def process_frame(frame):
    #img=cv2.putText(img, "{}".format(dis), (int(x2), int(y2)), cv2.FONT_HERSHEY_PLAIN, 1, (0,0,255), 2, cv2.LINE_AA)
     #print('angle mean is {} and var is {}'.format(np.mean(anglemat),np.var(anglemat)))
     #print('gia tri hieu la {}'.format(abs(c1-c2)))
-    xm3=math.sqrt((1080-xmax)**2+(ymax)**2)
-    a = -0.07280067919587918
-    b = 0.0001767467766172589
-    c = -0.038716739957248475
-    d = 1.1437976876676706e-05
-    e = -0.020572336452301287
-    f = 11.628985207409308
+    xm3=math.sqrt((480-xmax)**2+(ymax)**2)
+    
+    a = -0.5143982579447898
+    b = 100.0
+    c = -0.0035953379711280904
+    d = 0.0021609230420825596
+    e = 93.20888639622618
+    f = -26.586323448819293
+    g = -1.007664154816278
+    h = 99.80146734482402
+    i = -1.1147554660279417
     xm1=indexmvar
     xm2=maxdiffmean
-    #xm3=198.305320150519
-    if indexmvar!=0 and maxdiffmean!=0:
-     dis=(a*xm1**2+b*xm1)+(b*xm2**2+c*xm2)+(d*xm3**2+e*xm3)+f
+    
+    if xm3 >0.01 and indexmvar>0.01 and maxdiffmean>0.01:
+     dis=xm2# b*(xm3**a)+c*xm3+d*xm2+e*(xm1**f)+g*xm1+h*(xm2**i)#b*(xm3**a)+c*xm3+d*xm2+h*(xm2**i)#b*(xm3**a)+c*xm3+d*xm2+e*(xm1**f)+g*xm1+h*(xm2**i) #b*(xm3**a)+c*xm3+d*(xm1**e)+f*xm1# b*(xm3**a)+c*xm3+d*xm2+xm1*e
+     if(dis<0):
+      dis=0
     else:
      dis=-1000
     return dis
-def calib(cap_receive):
- print('move to position 0 and press key')
- m.getch()
- 
- ret,frame = cap_receive.read()
- if not ret:
-            print('empty frame 0')
-            return 0,0
- #cv2.imshow('frame at zero', frame)
- y_0=float(process_frame(frame))
- 
- print('move to position 0,5 and press key')
- m.getch()
- ret,frame = cap_receive.read()
- if not ret:
-            print('empty frame 0,5')
-            return 0,0
- #cv2.imshow('frame at 0.5', frame)
- y_05=float(process_frame(frame))
- #print('y_05 is {} and real max is {}'.format(y_05,440-y_05))
- slide=float(0.5/(y_05-y_0))
- print('slide is {}'.format(abs(slide)))
- print('move to position 1 and press key')
- m.getch()
- 
- ret,frame = cap_receive.read()
- if not ret:
-            print('empty frame 1')
-            return 0,0
- #cv2.imshow('frame at 1', frame)
- y_1=float(process_frame(frame))
- #rint('y_1 is {} and real max is {}'.format(y_1,440-y_1))
- error=1-(y_1-y_0)*slide
- print('error is {}'.format(error))
- offset=0
- if abs(error)>0.1:
-  offset=error
- print('validation (0.5 to 1) is {}'.format(0.5-slide*(y_1-y_05)+offset))
- return slide,offset 
+
   
 def receive():
     
@@ -166,19 +138,43 @@ def receive():
     if not cap_receive.isOpened():
         print('VideoCapture not opened')
         exit(0)       
-    #slide,offset=calib(cap_receive)      
+    #slide,offset=calib(cap_receive)    
+    pre_dis=0
+    dis_arr=[]
+    count_dis=0
+    mean_dis=0
+    
     while True:
+        
         ret,frame = cap_receive.read()
        
         if not ret:
             print('empty frame')
             break
         dis=process_frame(frame)
+        
         if (dis!=-1000):
+         
          pre_dis=dis
+         
+         if (dis<50):
+          cv2.imwrite('50.jpeg'.format(count), frame)
+         if (dis<70 and dis>60):
+          cv2.imwrite('6070.jpeg'.format(count), frame)
+         if (dis>80 ):
+          cv2.imwrite('80.jpeg'.format(count), frame)
+         if (dis==0):
+          cv2.imwrite('0luon.jpeg'.format(count), frame)
+          
+          
+          
+          
         else:
          dis=pre_dis
+        
+       
         #dis=
+        
         frame=cv2.putText(frame, "{}".format(int(dis)), (540, 320), cv2.FONT_HERSHEY_PLAIN, 1, (0,0,255), 2, cv2.LINE_AA)
         print("{}".format(dis))
         cv2.imshow('receive', frame)

@@ -22,7 +22,7 @@ def load_images_from_folder(folder):
         if img is not None:
             images.append(img)
     return images,y_matrix
-folder="./curve1//"
+folder="./curve5//"
 images,ym=load_images_from_folder(folder)
 
 #df = pd.DataFrame(columns=['ult', 'ulb', 'dlt','dlb'])
@@ -33,7 +33,7 @@ df=pd.read_csv('frame_test.csv')
 
 xm=[]
 for img_index, img in enumerate(images):
-    img=img[140:,:]
+    img=img[140:,600:]
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
 #io.imshow(img[:, :, ::-1])
@@ -62,14 +62,14 @@ for img_index, img in enumerate(images):
     ymax=0
     premean=0
     maxdiffmean=0
-    for index in range(20):
+    for index in range(10):
     #fragimg.append(img[index*50:index*50+50,:])
-        edges=img[index*25:index*25+25,:]
+        edges=img[index*50:index*50+50,:]
     #io.imshow(edges)
     #plt.show()
     #lines = cv2.HoughLinesP(edges, 1, np.pi/180, 30, maxLineGap=250)
-    #lines = cv2.HoughLinesP(edges, 1, np.pi/180, 10, maxLineGap=10)
-        lines = cv2.HoughLinesP(edges, 1, np.pi/180, 15, maxLineGap=20)
+    #lines = cv2.HoughLinesP(edges, 1, np.pi/180, 10, maxLineGap=10) 
+        lines = cv2.HoughLinesP(edges, 1, np.pi/180, 15, maxLineGap=20) #retrai nwith 200 20 is old
         if lines is None:
          #print('no line')
          continue
@@ -104,9 +104,9 @@ for img_index, img in enumerate(images):
              #angle2=angle
             #angle= math.degrees(math.atan((y1-y2)/(x1-x2)))
             
-            if (x2>500) and (x2>500) and (25*index+y2>ymax):
+            if (x2>350) and (x2>350) and (50*index+y2>ymax):
                #print('got ymnax')
-               ymax=25*index+y2
+               ymax=50*index+y2
                xmax=x2
         if (anglemat):     
          if (premean!=0):  
@@ -128,8 +128,9 @@ for img_index, img in enumerate(images):
    #img=cv2.putText(img, "{}".format(dis), (int(x2), int(y2)), cv2.FONT_HERSHEY_PLAIN, 1, (0,0,255), 2, cv2.LINE_AA)
     #print('angle mean is {} and var is {}'.format(np.mean(anglemat),np.var(anglemat)))
     #print('gia tri hieu la {}'.format(abs(c1-c2)))
-    dis=math.sqrt((1080-xmax)**2+(ymax)**2)
-    
+    dis=math.sqrt((480-xmax)**2+(ymax)**2)
+    print('mean of diffangle is {} and var is {}'.format(np.mean(diffangle),np.var(diffangle))) 
+    print('mean of index is {} and var is {}'.format(np.mean(indexa),np.var(indexa)))
     xm.append(dis)
     df = df.append(pd.Series([indexmvar,maxdiffmean , dis, ym[img_index]], index=df.columns ), ignore_index=True)
     #print( ' xmax is {}, ymax is {} ymax after {} and dis is {}  '.format(xmax,ymax,500-(ymax),dis))
@@ -141,11 +142,13 @@ for img_index, img in enumerate(images):
  #io.imshow(img)
  #plt.show()
 df.to_csv('frame_test.csv', encoding='utf-8', index=False)
-print('mean of diffangle is {} and var is {}'.format(np.mean(diffangle),np.var(diffangle))) 
-print('mean of index is {} and var is {}'.format(np.mean(indexa),np.var(indexa)))
+#print('mean of diffangle is {} and var is {}'.format(np.mean(diffangle),np.var(diffangle))) 
+#print('mean of index is {} and var is {}'.format(np.mean(indexa),np.var(indexa)))
 xm=np.array(xm)
 ym=np.array(ym)
+'''
 print('xm is heerrrrrrrrrrrrr')
 print(xm)
 print('ym is heerrrrrrrrrrrrr')
+'''
 print(ym)

@@ -37,7 +37,15 @@ def calc_y(x):
     h=x[7]
     i=x[8]
     #y = a * xm1 + b  # linear regression
-    y = (+a*xm1**2+b*xm1)+(b*xm2**2+c*xm2)+(f*(xm3**e)+d*xm3**2+e*xm3)+f
+    #y = (a*(xm1**b))+(c*(xm2**d))+(f*(xm3**e)+g*xm3)+h
+    #y = b*(xm3**a)+c*xm3+d*xm2+e*(xm1**f)+g*xm1
+   # y = b*(xm3**a)*(xm1**d)*(xm2**f)
+    #y = b*(xm3**a)+c*xm3+d*(xm1**e)+f*xm1
+    #y = b*(xm3**a)+c*xm3+d*xm2+g*xm1
+    y = b*(xm3**a)+c*xm3+d*xm2+e*(xm1**f)+g*xm1+h*(xm2**i)
+    #y = b*(xm3**a)+c*xm3
+    #y = b*(xm3**a)+c*xm3+d*xm2+e*(xm2**f)
+    #y =  b*(xm3**a)+c*xm3+d*xm2+h*(xm2**i)
     return y
 
 # define objective
@@ -47,7 +55,7 @@ def objective(x):
     # calculate objective
     obj = 0.0
     for i in range(len(ym)):
-        obj = obj + ((y[i]-ym[i])/ym[i])**2    
+        obj = obj + ((y[i]-ym[i])/ym[i])**2   
     # return result
     return obj
 
@@ -69,7 +77,7 @@ print('Initial Objective: ' + str(objective(x0)))
 # bounds on variables
 my_bnds = (-100.0,100.0)
 bnds = (my_bnds, my_bnds, my_bnds, my_bnds,my_bnds,my_bnds,my_bnds,my_bnds,my_bnds)
-solution = minimize(objective, x0, method='SLSQP', bounds=bnds)
+solution = minimize(objective, x0, method='L-BFGS-B', bounds=bnds)       #SLSQP
 x = solution.x
 y = calc_y(x)
 
