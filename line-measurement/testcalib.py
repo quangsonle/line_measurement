@@ -10,54 +10,55 @@ def process_frame(frame):
     img=frame[140:,600:]
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-#io.imshow(img[:, :, ::-1])
-#plt.show()
-    #lower_range = np.array([20,30,190])
-    #upper_range = np.array([29,190,240])
-    lower_range = np.array([20,10,190])
+    lower_range = np.array([20,10,169])    # lower_range = np.array([20,10,190]) upper_range = np.array([37,190,255])
+    
     upper_range = np.array([37,190,255])
+#lower_range = np.array([71,39,71])  
+#upper_range = np.array([189,125,190])
+    #lower_range = np.array([39,90,130])  
+    #upper_range = np.array([100,189,178])
     img = cv2.inRange(img, lower_range, upper_range)
     
     if cv2.countNonZero(img) < 100:
-      return 12
-#img[abs(35-img[:,:,0])>=4]=0
-#img[img[:,:,0]!=0]=1
-#img[abs(img[:,:,0]-36)<5]=1
-
-#io.imshow(img)
-#plt.show()
-#gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+     print('so far')
     img = cv2.GaussianBlur(img,(5,5),cv2.BORDER_DEFAULT)
+    #img[abs(35-img[:,:,0])>=4]=0
+    #img[img[:,:,0]!=0]=1
+    #img[abs(img[:,:,0]-36)<5]=1
+
+    
+
+    #gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     img = cv2.Canny(img, 60, 60*4)
-   
-#io.imshow(edges)
-#plt.show()
-#lines = cv2.HoughLinesP(edges, 1, np.pi/180, 30, maxLineGap=250)
-#lines = cv2.HoughLinesP(edges, 1, np.pi/180, 10, maxLineGap=10)
-    #lines = cv2.HoughLinesP(edges, 1, np.pi/180, 8, maxLineGap=50)
-    mvariance=0
-    xmax=0
+
     ymax=0
-    premean=0
-    maxdiffmean=0
+    xmax=0
+    #premean=0
+    #maxdiffmean=0
     indexmvar=0
-    for index in range(10):
+    enda=0
+    neg_detected=0
+    neg_index=0
+    neg_value=0
+    pos_value=0
+    for index in range(20):
     #fragimg.append(img[index*50:index*50+50,:])
-        edges=img[index*50:index*50+50,:]  # sua o day
+        edges=img[index*25:index*25+25,:]
     #io.imshow(edges)
     #plt.show()
     #lines = cv2.HoughLinesP(edges, 1, np.pi/180, 30, maxLineGap=250)
     #lines = cv2.HoughLinesP(edges, 1, np.pi/180, 10, maxLineGap=10)
-        lines = cv2.HoughLinesP(edges, 1, np.pi/180, 15, maxLineGap=20)
+        lines = cv2.HoughLinesP(edges, 1, np.pi/180, 15, maxLineGap=100)
         if lines is None:
-         #print('no line')
-         continue
+            
+             continue
+             
         
 
-        
-        
-        anglemat=[]
        
+       
+       
+        anglemat=[]
         for indx,line in enumerate(lines):
            x1, y1, x2, y2 = line[0]
            #print('now')
@@ -70,56 +71,74 @@ def process_frame(frame):
            #angle= math.degrees(math.atan2((y2-y1),(x2-x1)))
            if (x1!=x2) and (y1!=y2) :
             angle= math.degrees(math.atan2((y2-y1),(x2-x1)))
-            if abs(angle)>25:
+            if abs(angle)>20 and enda==0:
              
-             cv2.line(img, (x1, y1), (x2, y2), (255, 255, 0), 1)
-            #print( ' line {} x1 {},y1 {},x2 {},y2 {} angle  {}'.format(indx,x1,y1,x2,y2,angle))
+             
              anglemat.append(angle)
-            #if y_min1>y1:
-             #y_min1=y1
-             #angle1=angle
-            #if y_min2>y2:
-             #y_min2=y2
-             #angle2=angle
-            #angle= math.degrees(math.atan((y1-y2)/(x1-x2)))
-            
-            if (x2>350) and (x2>350) and (50*index+y2>ymax):     # thi fai sua o day
-               #print('got ymnax')
-               ymax=50*index+y2
-               xmax=x2
-        if (anglemat):     
-         if (premean!=0):  
-          #if (abs(np.mean(anglemat)-premean)>100):
-           #print('diff is over 100 is {} and index is {}'.format(abs(np.mean(anglemat)-premean),index))          
-          if abs(np.mean(anglemat)-premean)>maxdiffmean:
-           maxdiffmean=np.mean(anglemat)-premean
+            if x1>350 and x2>350 and 25*index+y2>ymax:
+             ymax=25*index+y2
+             xmax=x2
+    
+        if not anglemat or enda==1:
+         pass
+        else:
+         #print('index is {} mean is {} variance is {}'.format(index, np.mean(anglemat),np.var(anglemat)))
+         if (anglemat): 
+          if (np.mean(anglemat))<-25 and neg_detected==0:
+           neg_detected=1
+           neg_index=index
+           neg_value=np.mean(anglemat)
+           continue
+          if (neg_detected==1):
+            if (np.mean(anglemat))>40:
+             if (index>neg_index):
+               indexmvar=index
+               pos_value=np.mean(anglemat)
+               enda=1
            
-           indexmvar=index
-          premean=np.mean(anglemat)
-         else:
-          premean=np.mean(anglemat) # first time
-    
+            
+           
+         
+         '''
+             if (premean!=0):  
+              #if (abs(np.mean(anglemat)-premean)>100):
+               #print('diff is over 100 is {} and index is {}'.format(abs(np.mean(anglemat)-premean),index))          
+              if abs(np.mean(anglemat)-premean)>maxdiffmean:
+               maxdiffmean=abs(np.mean(anglemat)-premean)
+               
+               indexmvar=index
+              premean=np.mean(anglemat)
+             else:
+              premean=np.mean(anglemat) # first time
+              '''
+     
+    #print('angle1 {}, y1 is {} and angle2 is  {}, y2 is {}'.format(angle1,y_min1,angle2,y_min2))
+   
+    xm3=math.sqrt((480-xmax)**2+(ymax)**2)
     #print('max diffmean is {} premean  is {} and its index is {}'.format(maxdiffmean,premean,indexmvar))    
-    
+    xm2=pos_value-neg_value
    #img=cv2.putText(img, "{}".format(dis), (int(x2), int(y2)), cv2.FONT_HERSHEY_PLAIN, 1, (0,0,255), 2, cv2.LINE_AA)
     #print('angle mean is {} and var is {}'.format(np.mean(anglemat),np.var(anglemat)))
     #print('gia tri hieu la {}'.format(abs(c1-c2)))
-    xm3=math.sqrt((480-xmax)**2+(ymax)**2)
-    
-    a = -0.5143982579447898
+    #print(indexmvar)
+    '''
+    if (indexmvar>10):
+      cv2.imwrite('10f.jpeg', frame)
+         
+    if (indexmvar==3):
+      cv2.imwrite('4f.jpeg', frame)
+    if (indexmvar==6):
+      cv2.imwrite('6f.jpeg', frame)
+      '''
+    a = -0.486677237039261
     b = 100.0
-    c = -0.0035953379711280904
-    d = 0.0021609230420825596
-    e = 93.20888639622618
-    f = -26.586323448819293
-    g = -1.007664154816278
-    h = 99.80146734482402
-    i = -1.1147554660279417
+    c = -0.0025037093896842716
+    d = -0.5857928636371362
     xm1=indexmvar
-    xm2=maxdiffmean
+    #xm2=maxdiffmean
     
-    if xm3 >0.01 and indexmvar>0.01 and maxdiffmean>0.01:
-     dis=xm2# b*(xm3**a)+c*xm3+d*xm2+e*(xm1**f)+g*xm1+h*(xm2**i)#b*(xm3**a)+c*xm3+d*xm2+h*(xm2**i)#b*(xm3**a)+c*xm3+d*xm2+e*(xm1**f)+g*xm1+h*(xm2**i) #b*(xm3**a)+c*xm3+d*(xm1**e)+f*xm1# b*(xm3**a)+c*xm3+d*xm2+xm1*e
+    if xm3 >0.01 and indexmvar>0.01 :
+     dis=b*(xm3**a)+c*xm3+xm1*d+1#b*(xm3**a)+c*xm3+d*xm2+e*(xm1**f)+g*xm1+h*(xm2**i)#b*(xm3**a)+c*xm3+d*xm2+h*(xm2**i)#b*(xm3**a)+c*xm3+d*xm2+e*(xm1**f)+g*xm1+h*(xm2**i) #b*(xm3**a)+c*xm3+d*(xm1**e)+f*xm1# b*(xm3**a)+c*xm3+d*xm2+xm1*e
      if(dis<0):
       dis=0
     else:
@@ -157,15 +176,7 @@ def receive():
          
          pre_dis=dis
          
-         if (dis<50):
-          cv2.imwrite('50.jpeg'.format(count), frame)
-         if (dis<70 and dis>60):
-          cv2.imwrite('6070.jpeg'.format(count), frame)
-         if (dis>80 ):
-          cv2.imwrite('80.jpeg'.format(count), frame)
-         if (dis==0):
-          cv2.imwrite('0luon.jpeg'.format(count), frame)
-          
+         
           
           
           

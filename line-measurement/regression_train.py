@@ -42,10 +42,12 @@ def calc_y(x):
    # y = b*(xm3**a)*(xm1**d)*(xm2**f)
     #y = b*(xm3**a)+c*xm3+d*(xm1**e)+f*xm1
     #y = b*(xm3**a)+c*xm3+d*xm2+g*xm1
-    y = b*(xm3**a)+c*xm3+d*xm2+e*(xm1**f)+g*xm1+h*(xm2**i)
+    y = b*(xm3**a)+c*xm3+xm1*d
+   
+    
     #y = b*(xm3**a)+c*xm3
     #y = b*(xm3**a)+c*xm3+d*xm2+e*(xm2**f)
-    #y =  b*(xm3**a)+c*xm3+d*xm2+h*(xm2**i)
+    #y =  b*(xm3**a)+c*xm3+d*xm2
     return y
 
 # define objective

@@ -36,89 +36,93 @@ for img_index, img in enumerate(images):
     img=img[140:,600:]
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-#io.imshow(img[:, :, ::-1])
-#plt.show()
-    #lower_range = np.array([20,30,190])
-    #upper_range = np.array([29,190,240])
-    lower_range = np.array([20,10,190])
+    lower_range = np.array([20,10,169])    # lower_range = np.array([20,10,190]) upper_range = np.array([37,190,255])
+        
     upper_range = np.array([37,190,255])
+    #lower_range = np.array([71,39,71])  
+    #upper_range = np.array([189,125,190])
+        #lower_range = np.array([39,90,130])  
+        #upper_range = np.array([100,189,178])
     img = cv2.inRange(img, lower_range, upper_range)
+        
+    if cv2.countNonZero(img) < 100:
+         print('so far')
     img = cv2.GaussianBlur(img,(5,5),cv2.BORDER_DEFAULT)
-#img[abs(35-img[:,:,0])>=4]=0
-#img[img[:,:,0]!=0]=1
-#img[abs(img[:,:,0]-36)<5]=1
+        #img[abs(35-img[:,:,0])>=4]=0
+        #img[img[:,:,0]!=0]=1
+        #img[abs(img[:,:,0]-36)<5]=1
 
-#io.imshow(img)
-#plt.show()
-#gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        
+
+        #gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     img = cv2.Canny(img, 60, 60*4)
-#io.imshow(edges)
-#plt.show()
-#lines = cv2.HoughLinesP(edges, 1, np.pi/180, 30, maxLineGap=250)
-#lines = cv2.HoughLinesP(edges, 1, np.pi/180, 10, maxLineGap=10)
-    #lines = cv2.HoughLinesP(edges, 1, np.pi/180, 8, maxLineGap=50)
-    mvariance=0
-    xmax=0
-    ymax=0
-    premean=0
-    maxdiffmean=0
-    for index in range(10):
-    #fragimg.append(img[index*50:index*50+50,:])
-        edges=img[index*50:index*50+50,:]
-    #io.imshow(edges)
-    #plt.show()
-    #lines = cv2.HoughLinesP(edges, 1, np.pi/180, 30, maxLineGap=250)
-    #lines = cv2.HoughLinesP(edges, 1, np.pi/180, 10, maxLineGap=10) 
-        lines = cv2.HoughLinesP(edges, 1, np.pi/180, 15, maxLineGap=20) #retrai nwith 200 20 is old
-        if lines is None:
-         #print('no line')
-         continue
-        
 
-        
-        
-        anglemat=[]
-       
-        for indx,line in enumerate(lines):
-           x1, y1, x2, y2 = line[0]
-           #print('now')
-           #print(line)
-          
-           
-          
-           #rho = line[0][0]
-           #theta = line[0][1]
-           #angle= math.degrees(math.atan2((y2-y1),(x2-x1)))
-           if (x1!=x2) and (y1!=y2) :
-            angle= math.degrees(math.atan2((y2-y1),(x2-x1)))
-            if abs(angle)>25:
-             
-             cv2.line(img, (x1, y1), (x2, y2), (255, 255, 0), 1)
-            #print( ' line {} x1 {},y1 {},x2 {},y2 {} angle  {}'.format(indx,x1,y1,x2,y2,angle))
-             anglemat.append(angle)
-            #if y_min1>y1:
-             #y_min1=y1
-             #angle1=angle
-            #if y_min2>y2:
-             #y_min2=y2
-             #angle2=angle
-            #angle= math.degrees(math.atan((y1-y2)/(x1-x2)))
+    ymax=0
+    xmax=0
+        #premean=0
+    maxdiffmean=0
+    indexmvar=0
+    enda=0
+    neg_detected=0
+    neg_index=0
+    neg_value=0
+    pos_value=0
+    for index in range(20):
+        #fragimg.append(img[index*50:index*50+50,:])
+            edges=img[index*25:index*25+25,:]
+        #io.imshow(edges)
+        #plt.show()
+        #lines = cv2.HoughLinesP(edges, 1, np.pi/180, 30, maxLineGap=250)
+        #lines = cv2.HoughLinesP(edges, 1, np.pi/180, 10, maxLineGap=10)
+            lines = cv2.HoughLinesP(edges, 1, np.pi/180, 15, maxLineGap=100)
+            if lines is None:
+                 print('no line')
+                 continue
+                 
             
-            if (x2>350) and (x2>350) and (50*index+y2>ymax):
-               #print('got ymnax')
-               ymax=50*index+y2
-               xmax=x2
-        if (anglemat):     
-         if (premean!=0):  
-          #if (abs(np.mean(anglemat)-premean)>100):
-           #print('diff is over 100 is {} and index is {}'.format(abs(np.mean(anglemat)-premean),index))          
-          if abs(np.mean(anglemat)-premean)>maxdiffmean:
-           maxdiffmean=np.mean(anglemat)-premean
+
            
-           indexmvar=index
-          premean=np.mean(anglemat)
-         else:
-          premean=np.mean(anglemat) # first time
+           
+           
+            anglemat=[]
+            for indx,line in enumerate(lines):
+               x1, y1, x2, y2 = line[0]
+               #print('now')
+               #print(line)
+              
+               
+              
+               #rho = line[0][0]
+               #theta = line[0][1]
+               #angle= math.degrees(math.atan2((y2-y1),(x2-x1)))
+               if (x1!=x2) and (y1!=y2) :
+                angle= math.degrees(math.atan2((y2-y1),(x2-x1)))
+                if abs(angle)>20 and enda==0:
+                 
+                 
+                 anglemat.append(angle)
+                if x1>350 and x2>350 and 25*index+y2>ymax:
+                 ymax=25*index+y2
+                 xmax=x2
+        
+            if not anglemat or enda==1:
+             print('ko du goc at {}'.format(index))
+             #pass
+            else:
+             print('index is {} mean is {} variance is {}'.format(index, np.mean(anglemat),np.var(anglemat)))
+             if (anglemat): 
+              if (np.mean(anglemat))<-25 and neg_detected==0:
+               neg_detected=1
+               neg_index=index
+               neg_value=np.mean(anglemat)
+               continue
+              if (neg_detected==1):
+                if (np.mean(anglemat))>40:
+                 if (index>neg_index):
+                   indexmvar=index
+                   pos_value=np.mean(anglemat)
+                   maxdiffmean=pos_value-neg_value
+                   enda=1
         #else:
          #print('no angle mat consider everything zero')
     diffangle.append(maxdiffmean)
