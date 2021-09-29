@@ -1,11 +1,46 @@
-import numpy as np 
-import cv2 
+#Vesrion of 1.1.2021
+import cv2
+import numpy as np
+import picamera
+from picamera.array import PiRGBArray
+import serial #serial communication
+from time import strftime
+import time
+
+
 from multiprocessing import Process
 #import csv
-import msvcrt as m
-from matplotlib import pyplot as plt
-from skimage import io
+
+
+
 import math  
+# This function takes the linear lines that we found and make an avrrage of them and puts them back. So instead of few 
+# different direction lines we get just one. This one line will start at the bottom and will go 0.5 of the image size. 
+
+
+def sendInt(servo_angle):
+    send_string = str(servo_angle)
+    send_string += ">\n"
+    send_string = "<an" + send_string
+    ser.write(send_string.encode('utf-8'))
+    ser.flush()
+    
+def showing_the_video(rotated_image, line_image, cropped_image):
+    combo_image = cv2.addWeighted(rotated_image, 0.8, line_image, 1, 1)#combines the two images together
+    result.write(combo_image)
+    cv2.imshow('result', combo_image)
+
+#func PID recieves
+def PID(error, mean_prev_errors, iteration_time, integral_prior, error_prior, forward, Kp, Kd, Ki):
+#     integral = integral_prior + error * iteration_time
+    integral = error * iteration_time
+    #print("INT " + str(integral))
+    derivative = (error - error_prior) / iteration_time
+    output = int(65 + Kp* mean_prev_errors + Ki* integral + Kd* derivative)
+    if output == 0: output = 1 #for some reason it doesnt get 0
+    error_prior = error
+    integral_prior = integral
+    return [output, integral_prior, error_prior]
 def process_frame(frame):
     img=frame[140:,600:]
     img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -130,83 +165,75 @@ def process_frame(frame):
     if (indexmvar==6):
       cv2.imwrite('6f.jpeg', frame)
       '''
-    a = -0.486677237039261
-    b = 100.0
-    c = -0.0025037093896842716
-    d = -0.5857928636371362
+    
     xm1=indexmvar
     #xm2=maxdiffmean
-    
-    if xm3 >0.01 and indexmvar>0.01 :
-    
-     dis=b*(xm3**a)+c*xm3+xm1*d#b*(xm3**a)+c*xm3+d*xm2+e*(xm1**f)+g*xm1+h*(xm2**i)#b*(xm3**a)+c*xm3+d*xm2+h*(xm2**i)#b*(xm3**a)+c*xm3+d*xm2+e*(xm1**f)+g*xm1+h*(xm2**i) #b*(xm3**a)+c*xm3+d*(xm1**e)+f*xm1# b*(xm3**a)+c*xm3+d*xm2+xm1*e
-     if (dis>7.5):
-      dis+=2
-     elif (dis>4.5):
-      dis+=1
-     if(dis<0):
-      dis=0
+    if (xm2>40):
+        a = -0.486677237039261
+        b = 100.0
+        c = -0.0025037093896842716
+        d = -0.5857928636371362
+        if xm3 >0.01 and indexmvar>0.01 :
+        
+         dis=b*(xm3**a)+c*xm3+xm1*d#b*(xm3**a)+c*xm3+d*xm2+e*(xm1**f)+g*xm1+h*(xm2**i)#b*(xm3**a)+c*xm3+d*xm2+h*(xm2**i)#b*(xm3**a)+c*xm3+d*xm2+e*(xm1**f)+g*xm1+h*(xm2**i) #b*(xm3**a)+c*xm3+d*(xm1**e)+f*xm1# b*(xm3**a)+c*xm3+d*xm2+xm1*e
+         if (dis>7.5):
+          dis+=2
+         elif (dis>4.5):
+          dis+=1
+         if(dis<0):
+          dis=0
+        else:
+         dis=-1000
     else:
-     dis=-1000
+        a = -7.652216550045051e-07
+        b = 0.00038441947545969705
+        c = 0.00019250838739497532
+        d = 1.1102884903827761e-05
+        e = 1.1102884903827761e-05
+        f = -8.148810861200835e-15
+        dis = a*xm3**3+b*xm3**2+c*xm3+d +e*xm3**f
     return dis
 
-  
-def receive():
-    
-    #f = open('data.csv', 'w',newline='')
-    #csv.writer.writerow(["depth", "id"])
-    count=1
-    
-    cap_receive = cv2.VideoCapture('udpsrc port=5000 caps = "application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, payload=(int)96" ! rtph264depay ! decodebin ! videoconvert ! appsink', cv2.CAP_GSTREAMER)
 
-    if not cap_receive.isOpened():
-        print('VideoCapture not opened')
-        exit(0)       
-    #slide,offset=calib(cap_receive)    
-    pre_dis=0
-    dis_arr=[]
-    count_dis=0
-    mean_dis=0
-    
-    while True:
-        
-        ret,frame = cap_receive.read()
-       
-        if not ret:
-            print('empty frame')
-            break
-        dis=process_frame(frame)
-        
-        if (dis!=-1000):
-         
-         pre_dis=dis
-         
-         
-          
-          
-          
-        else:
+
+
+
+
+
+
+
+## CONNECTION WITH ARDUINO SETUP############################
+port0 = "/dev/ttyACM0"
+port1 = "/dev/ttyACM1"
+baudrate = 115200
+ser = serial.Serial(port0, baudrate, timeout = 1)
+ser.flush()
+
+## CAMERA AND VIDEO SETUP #################################
+camera = picamera.PiCamera()
+size = (640, 480)
+camera.resolution = size
+camera.framerate = 30
+rawCapture = PiRGBArray(camera) #defines color scales
+time.sleep(1)
+#fourcc = cv2.VideoWriter_fourcc('M','J', 'P', 'G') #codec
+#result = cv2.VideoWriter('from_picamera.avi', fourcc, 30, size)#, isColor = False) - for B&W videos #saves the video
+
+###########################################################
+pre_dis=0
+## MAIN ###################################################
+for frame in camera.capture_continuous(rawCapture, format = 'bgr', use_video_port = True): #as long as the camera is ope    
+    start_time = time.time() #to knows how much time it takes for each iteration
+    image = frame.array
+    dis=process_frame(image)
+    if (dis!=-1000):   
+         pre_dis=dis     
+    else:
          dis=pre_dis
-        
-       
-        #dis=
-        
-        frame=cv2.putText(frame, "{}".format(int(dis)), (540, 320), cv2.FONT_HERSHEY_PLAIN, 1, (0,0,255), 2, cv2.LINE_AA)
-        print("{}".format(dis))
-        cv2.imshow('receive', frame)
-        
-       
-        if cv2.waitKey(1)&0xFF == ord('q'):
-            break            
+    print('dis is {}'.format(dis))
+camera.close()
+result.release()
+cv2.destroyAllWindows()
+sendInt('quit') #recieves the angle named 'quit' and sends the intager 'send_string' to arduino
+ser.close()
 
-    #cap_receive.release()
-
-if __name__ == '__main__':
-   
-    r = Process(target=receive)
-   
-    r.start()
-   
-    r.join()
-
-    cv2.destroyAllWindows()

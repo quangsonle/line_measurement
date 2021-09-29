@@ -22,14 +22,14 @@ def load_images_from_folder(folder):
         if img is not None:
             images.append(img)
     return images,y_matrix
-folder="./curve5//"
+folder="./train//"
 images,ym=load_images_from_folder(folder)
 
 #df = pd.DataFrame(columns=['ult', 'ulb', 'dlt','dlb'])
 diffangle=[]
 indexa=[]
-df=pd.read_csv('frame_test.csv')  
-#df = pd.DataFrame(columns =['index_of_curve', 'max_angle_difference', 'point_dis','dis'] ) 
+#df=pd.read_csv('frame_test.csv')  
+df = pd.DataFrame(columns =['index_of_curve', 'max_angle_difference', 'point_dis','dis'] ) 
 
 xm=[]
 for img_index, img in enumerate(images):
@@ -145,7 +145,7 @@ for img_index, img in enumerate(images):
 #edges=rgb2gray(edges)
  #io.imshow(img)
  #plt.show()
-df.to_csv('frame_test.csv', encoding='utf-8', index=False)
+df.to_csv('stright.csv', encoding='utf-8', index=False)
 #print('mean of diffangle is {} and var is {}'.format(np.mean(diffangle),np.var(diffangle))) 
 #print('mean of index is {} and var is {}'.format(np.mean(indexa),np.var(indexa)))
 xm=np.array(xm)

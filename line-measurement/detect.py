@@ -6,12 +6,15 @@ np.set_printoptions(threshold=sys.maxsize)
 import math  
 #img = cv2.imread("./temp_test/curve.jpeg")
 #img = cv2.imread("./temp_test/straight.jpeg")
-#img = cv2.imread("./curve1/6.jpeg")
+img = cv2.imread("./curve1/6.jpeg")
+
 #img = cv2.imread("./curve1/6.jpeg")
 #img = cv2.imread("./train/7.jpeg")
-img = cv2.imread("4f.jpeg")
+#img = cv2.imread("4f.jpeg")
 from matplotlib import pyplot as plt
 from skimage import io
+io.imshow(img)
+plt.show()
 #img[:, :, ::-1]
 img=img[140:,600:]
 img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)

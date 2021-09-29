@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # data file from URL address
-df = pd.read_csv("frame_test.csv")
+df = pd.read_csv("stright.csv")
 #dataset = dataframe.values
 #print(dataset)
 
@@ -42,8 +42,9 @@ def calc_y(x):
    # y = b*(xm3**a)*(xm1**d)*(xm2**f)
     #y = b*(xm3**a)+c*xm3+d*(xm1**e)+f*xm1
     #y = b*(xm3**a)+c*xm3+d*xm2+g*xm1
-    y = b*(xm3**a)+c*xm3+xm1*d
-   
+    #y = b*(xm3**a)+c*xm3+xm1*d   
+    
+    y = a*(xm3**3)+b*(xm3**2)+c*xm3 +e*(xm3**f)  #for stright line 
     
     #y = b*(xm3**a)+c*xm3
     #y = b*(xm3**a)+c*xm3+d*xm2+e*(xm2**f)
@@ -130,4 +131,5 @@ plt.xlabel('Measured Outcome (YM)')
 plt.ylabel('Predicted Outcome (Y)')
 #plt.legend([cLegend])
 plt.grid(True)
+plt.axis("equal")
 plt.show()
